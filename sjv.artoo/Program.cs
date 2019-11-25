@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using MassTransit;
+using MassTransit.ExtensionsDependencyInjectionIntegration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -41,16 +42,15 @@ namespace sjv.artoo
                             var host = bus2cfg.Host(new Uri(Configuration["RabbitMq:amqpUri"]), h => { });
                         }));
 
-                        //var rabbitMqOptions = new RabbitMqOptions();
-                        //Configuration.GetSection("RabbitMq").Bind(rabbitMqOptions);
-                        //services.AddSingleton(rabbitMqOptions);
+                        var rabbitMqOptions = new RabbitMqOptions();
+                        Configuration.GetSection("RabbitMq").Bind(rabbitMqOptions);
+                        services.AddSingleton(rabbitMqOptions);
 
-                        //services.AddMassTransit(x =>
-                        //{
-                        //    mt.AddConsumer<consumerType>();
-                        //    mt.AddWhateverConsumers();
-                        //});
-
+                        services.AddMassTransit(mt =>
+                        {
+                         //   mt.AddConsumer<consumerType>();
+                           // mt.AddWhateverConsumers();
+                        });
 
                         services.AddSingleton<SjvArtoo>();
                         container = services.BuildServiceProvider();
