@@ -20,4 +20,12 @@
     <PackageReference Include="Topshelf.Serilog" Version="4.2.1.218-develop" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="publish\publish\publish\publish\publish\publish\publish\publish\publish\" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if $(ConfigurationName) == Debug (dotnet publish $(ProjectFileName) -c Release -r win10-x64 -o $(ProjectDir)publish)&#xA;&#xD;&#xA;if $(ConfigurationName) == Debug ($(ProjectDir)publish\sjv.artoo.exe start)" />
+  </Target>
+
 </Project>

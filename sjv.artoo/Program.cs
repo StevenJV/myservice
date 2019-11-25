@@ -1,18 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+using MassTransit;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Formatting.Json;
+using Topshelf;
 
 namespace sjv.artoo
 {
-
     public class Program
     {
         public static IConfiguration Configuration => new ConfigurationBuilder()
@@ -29,14 +26,41 @@ namespace sjv.artoo
                     $"{Configuration["LogPath"]}{Configuration["ServiceName"]}.txt")
                 .CreateLogger();
 
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+            HostFactory.Run(cfg =>
+            {
+                cfg.Service<SjvArtoo>(x =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    x.ConstructUsing(name =>
+                    {
+                        IServiceProvider container = null;
+                        var services = new ServiceCollection();
+                        services.AddSingleton(Log.Logger);
+
+                        services.AddSingleton(context => Bus.Factory.CreateUsingRabbitMq(bus2cfg =>
+                        {
+                            var host = bus2cfg.Host(new Uri(Configuration["RabbitMq:amqpUri"]), h => { });
+                        }));
+
+                        //var rabbitMqOptions = new RabbitMqOptions();
+                        //Configuration.GetSection("RabbitMq").Bind(rabbitMqOptions);
+                        //services.AddSingleton(rabbitMqOptions);
+
+                        //services.AddMassTransit(x =>
+                        //{
+                        //    mt.AddConsumer<consumerType>();
+                        //    mt.AddWhateverConsumers();
+                        //});
+
+
+                        services.AddSingleton<SjvArtoo>();
+                        container = services.BuildServiceProvider();
+                        var service = container.GetService<SjvArtoo>();
+                        return service;
+                    });
+                    x.WhenStarted((s, hostControl) => s.Start(hostControl));
+                    x.WhenStopped((s, hostControl) => s.Stop(hostControl));
                 });
+            });
+        }
     }
 }

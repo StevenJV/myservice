@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MassTransit;
 using Serilog;
 using Topshelf;
@@ -16,6 +13,7 @@ namespace sjv.artoo
         {
             _bus = bus;
         }
+
         public bool Start(HostControl hostControl)
         {
             _bus.Start();
