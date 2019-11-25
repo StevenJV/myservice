@@ -48,8 +48,7 @@ namespace sjv.artoo
 
                         services.AddMassTransit(mt =>
                         {
-                         //   mt.AddConsumer<consumerType>();
-                           // mt.AddWhateverConsumers();
+                            mt.AddConsumer<ScheduleNotificationConsumer>();
                         });
 
                         services.AddSingleton<SjvArtoo>();
